@@ -1,0 +1,54 @@
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      webservice:
+        condition: service_started
+    restart: always
+    working_dir: /home/node/pa11y-dashboard
+    entrypoint: ["npm", "start"]
+    ports:
+      - 8080:8080
+    networks:
+      - pa11y
+    environment:
+      - PORT=8080
+      - WEBSERVICE_URL=http://webservice:3000/
+  webservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      mongodb:
+        condition: service_started
+    restart: always
+    working_dir: /home/node/pa11y-webservice
+    entrypoint: ["npm", "start"]
+    ports:
+      - 3000:3000
+    networks:
+      - pa11y
+    environment:
+      - PORT=3000
+      - DATABASE=mongodb://mongodb/pa11y-webservice
+      # - DATABASE=mongodb://Ighee9su:aeY4ahDi@mongodb/pa11y-webservice
+  mongodb:
+    restart: always
+    image: mongo:latest
+    environment:
+      - xMONGO_INITDB_ROOT_USERNAME=Ighee9su
+      - xMONGO_INITDB_ROOT_PASSWORD=aeY4ahDi
+      - xMONGO_INITDB_DATABASE=pa11y-webservice
+    networks:
+      - pa11y
+    volumes:
+      - mongo-data:/data/db
+
+networks:
+  pa11y:
+
+volumes:
+  mongo-data:
